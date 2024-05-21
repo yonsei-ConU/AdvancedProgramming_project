@@ -22,10 +22,10 @@ if N * M <= C:
 mines = random.sample(range(M * N), C)
 
 # make board
-board = [['.'] * N for _ in range(M)]
+board = [['.'] * M for _ in range(N)]
 for i in mines:
-    board[i // N][i % N] = '#'
-board_visual = [['_'] * N for _ in range(M)]
+    board[i % N][i // N] = '#'
+board_visual = [['_'] * M for _ in range(N)]
 dx = [-1,  0,  1,  1,  1,  0, -1, -1]
 dy = [ 1,  1,  1,  0, -1, -1, -1,  0]
 for y in range(N):
