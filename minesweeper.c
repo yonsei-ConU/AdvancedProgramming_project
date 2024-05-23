@@ -60,7 +60,7 @@ int main() {
     set_mine(aimX - 1, aimY - 1);
     reveal(aimX - 1, aimY - 1);
 
-    while(game_over != 0) {
+    while(game_over == 0) {
         print_board();
         printf("좌표를 입력해 주세요(x y) : ");
         scanf("%d %d", &aimX, &aimY);
@@ -126,12 +126,12 @@ void set_mine(int x, int y) {
     int dy[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
 
     for(count = 0; count < c; count++) {
-        srand(clock() * count);             // time(NULL) 의 경우 1초 단위로 업데이트되어 반복문에서 사용 부적합으로 판단
-        tempX = (rand() + x * count) % n;   // 최대한의 무작위성을 가질 수 있도록 변하는 값들을 활용
-        tempY = (rand() + y * count) % m;
+        srand(clock() + count);                      // time(NULL) 의 경우 1초 단위로 업데이트되어 반복문에서 사용 부적합으로 판단
+        tempX = (rand() * rand() + count * x) % n;   // 최대한의 무작위성을 가질 수 있도록 변하는 값들을 활용
+        tempY = (rand() * rand() + count * y) % m;
 
-        if(abs(tempX - x) > 1 && abs(tempY - y) > 1)    // 첫 칸 주위 1칸에는 지뢰를 배치하지 않도록 하여 초반 억까 방지
-            board[tempX][tempY].is_mine = 1;
+        if(abs(tempX - x) > 1 && abs(tempY - y) > 1 && board[tempX][tempY].is_mine == 0)
+            board[tempX][tempY].is_mine = 1; // 첫 칸 주위 1칸에는 지뢰를 배치하지 않도록 하여 초반 억까 방지
         else count--;
     }
 
