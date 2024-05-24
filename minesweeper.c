@@ -8,18 +8,18 @@
 #define opened '_'
 #define flag '!'
 
-int n, m, c = 0; // n은 가로, m은 세로, c는 지뢰 개수
+int n, m, c = 0;        // n은 가로, m은 세로, c는 지뢰 개수
 int revealed, flaged = 0;
-int game_over = 0;
+int game_over, game_win = 0;
 
 typedef struct{
-    int is_mine;
-    int is_flag;
-    int is_open;
+    int is_mine;        // 기본값 0, 지뢰일 경우 1
+    int is_flag;        // 기본값 0, 깃발 세워졌을 경우 1
+    int is_open;        // 기본값 0, 열렸을 경우 1
     int adj;            // 인접한 칸의 지뢰 개수
 } Board;    
 
-Board board[20][20];
+Board board[20][20];    //board[y좌표][x좌표]
 /**
  * @brief 초기화 담당 함수. 크기와 지뢰 개수를 입력받고 board를 초기화함
  * @return 없음
@@ -32,29 +32,31 @@ void init();
  * print 부분에서는 x와 y를 바꿔 사용자의 혼란을 줄임
  * @return 없음
  */
-void print_board(int x, int y); // x y 반전
+void print_board(int x, int y);     // x y 반전
 /**
  * @brief 지뢰의 위치를 정하고 각 자리의 adj(주변 지뢰의 개수)를 계산하는 함수.
  * @param x 시작지점의 x좌표 (0부터 시작)
  * @param y 시작지점의 y좌표 (0부터 시작)
  * @return 없음
  */
-void set_mine(int x, int y); // 배열 관점에서의 좌표 (0부터 시작)
+void set_mine(int x, int y);        // 배열 관점에서의 좌표 (0부터 시작)
 /**
  * @brief 지뢰의 칸을 여는 함수
  * @param x 열고자 하는 지점의 x좌표 (0부터 시작)
  * @param y 열고자 하는 지점의 y좌표 (0부터 시작)
  */
-void reveal(int x, int y); // 배열 관점에서의 좌표 (0부터 시작)
+void reveal(int x, int y);          // 배열 관점에서의 좌표 (0부터 시작)
 
 int main() {
-    int aimX, aimY; // 사용자 관점에서의 좌표 (1부터 시작)으로 입력은 받으나 1씩 감소시켜 0 시작으로 변형
-    char input = 0;
+    int aimX, aimY;                 // 사용자 관점에서의 좌표(1부터 시작)으로 입력은 받으나 1씩 감소시켜 0 시작(배열 관점)으로 변형
+    int flag_input = 0;             //
 
     init();
     print_board(-1, -1);
 
-    printf("좌표를 입력해 주세요(x(1~%d) y(1~%d)) : ", n, m);
+    printf("x, y 좌표를 공백으로 구분하여 입력해 주세요.\n");
+    printf("처음 여는 칸과 그 주변은 지뢰가 아닙니다.\n");
+    printf("범위 x(1~%d) y(1~%d) : ", n, m);
     scanf("%d %d", &aimX, &aimY);
 
     aimX--; aimY--;
@@ -62,15 +64,38 @@ int main() {
     set_mine(aimX, aimY);
     reveal(aimX, aimY);
 
-    while(game_over == 0) {
+    while(game_over == 0 && game_win == 0) {
         print_board(aimX, aimY);
-        printf("방금 (%d,%d)를 입력하였습니다. 새 좌표를 입력해 주세요(x y) : ", aimX + 1, aimY + 1);
+        printf("(%d,%d)를 입력하였습니다. 깃발을 꽂기 위해서는 좌표 앞에 -를 붙여 주세요. ex) -4 -10\n", aimX + 1, aimY + 1);
+        printf("입력은 공백으로 구분됩니다 : ");
         scanf("%d %d", &aimX, &aimY);
+
+        while(aimX * aimY <= 0) {
+            printf("잘못된 입력입니다. 깃발을 꽂을 경우 둘 다 -를 앞에 붙여야 합니다.\n");
+            printf("다시 입력해 주세요 : ");
+            scanf("%d %d", &aimX, &aimY);
+        }
+
+        if(aimX < 0 && aimY < 0) {
+            aimX *= -1; aimY *= -1;
+            aimX--; aimY--;
+            board[aimY][aimX].is_flag = 1;
+            flaged++;
+            continue;
+        }
+        
         aimX--; aimY--;
         reveal(aimX, aimY);
     }
-    printf("지뢰 칸을 열었습니다! 게임 종료\n");
-    return 0;
+
+    if(game_over) {
+        printf("지뢰 칸을 열었습니다! 게임 종료.\n");
+        return 0;
+    }
+    if(game_win) {
+        printf("지뢰를 모두 찾았습니다. 게임 승리!\n");
+        return 0;
+    }
 }
 
 void init() {
@@ -110,8 +135,6 @@ void print_board(int x, int y) {
     printf("\n지뢰 수 : %d, 전체 칸 : %d, 남은 지뢰 : %d\n", c, n * m, c - flaged);
     for(int i = 0; i < m; i++) {
         for(int j = 0; j < n; j++) {
-            if(x == j && y == i) color(WHITE, DarkRed);
-
             if(board[i][j].is_flag == 1) {
                 printf(" %c ", flag);
             }
@@ -121,13 +144,9 @@ void print_board(int x, int y) {
                 else printf(" %c ", opened);
                 }
                 else {
-                    color(WHITE, DarkGray);
                     printf(" %c ", closed);
                 }
-
-            color(GRAY, BLACK);
         }
-        color(GRAY, BLACK);
         printf("\n");
     }
 }
@@ -139,12 +158,12 @@ void set_mine(int x, int y) {
     int dy[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
 
     for(count = 0; count < c; count++) {
-        srand(clock() + count);                      // time(NULL) 의 경우 1초 단위로 업데이트되어 반복문에서 사용 부적합으로 판단
+        srand(clock() + count);                      // time(NULL) 의 경우 1초 단위로 업데이트되어 반복문에서 사용 부적합
         tempX = (rand() * rand() + count * x) % n;   // 최대한의 무작위성을 가질 수 있도록 변하는 값들을 활용
         tempY = (rand() * rand() + count * y) % m;
 
         if((abs(tempX - x) > 1 || abs(tempY - y) > 1) && board[tempY][tempX].is_mine == 0)
-            board[tempY][tempX].is_mine = 1; // 첫 칸 주위 1칸에는 지뢰를 배치하지 않도록 하여 초반 억까 방지
+            board[tempY][tempX].is_mine = 1;         // 첫 칸 주위 1칸에는 지뢰를 배치하지 않도록 하여 초반 억까 방지
         else count--;
     }
 
