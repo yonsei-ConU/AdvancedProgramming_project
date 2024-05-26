@@ -10,9 +10,9 @@
 
 int n, m, c = 0;        // n은 가로, m은 세로, c는 지뢰 개수
 int revealed, flaged = 0;
-int game_over, game_win = 0;
+int game_over = 0;
 
-typedef struct{
+typedef struct{ 
     int is_mine;        // 기본값 0, 지뢰일 경우 1
     int is_flag;        // 기본값 0, 깃발 세워졌을 경우 1
     int is_open;        // 기본값 0, 열렸을 경우 1
@@ -50,11 +50,12 @@ void reveal(int x, int y);          // 배열 관점에서의 좌표 (0부터 �
 int main() {
     int aimX, aimY;                 // 사용자 관점에서의 좌표(1부터 시작)으로 입력은 받으나 1씩 감소시켜 0 시작(배열 관점)으로 변형
     int flag_input = 0;             //
+    time_t start_time = time(NULL);      // 소요 시간 측정용도로 시작 시간 저장
 
     init();
     print_board(-1, -1);
 
-    printf("x, y 좌표를 공백으로 구분하여 입력해 주세요.\n");
+    printf("\nx, y 좌표를 공백으로 구분하여 입력해 주세요.\n");
     printf("처음 여는 칸과 그 주변은 지뢰가 아닙니다.\n");
     printf("범위 x(1~%d) y(1~%d) : ", n, m);
     scanf("%d %d", &aimX, &aimY);
@@ -64,9 +65,9 @@ int main() {
     set_mine(aimX, aimY);
     reveal(aimX, aimY);
 
-    while(game_over == 0 && game_win == 0) {
+    while(game_over == 0) {
         print_board(aimX, aimY);
-        printf("(%d,%d)를 입력하였습니다. 깃발을 꽂기 위해서는 좌표 앞에 -를 붙여 주세요. ex) -4 -10\n", aimX + 1, aimY + 1);
+        printf("\n(%d,%d)를 입력하였습니다. 깃발을 꽂기 위해서는 좌표 앞에 -를 붙여 주세요. ex) -4 -10\n", aimX + 1, aimY + 1);
         printf("입력은 공백으로 구분됩니다 : ");
         scanf("%d %d", &aimX, &aimY);
 
@@ -79,8 +80,14 @@ int main() {
         if(aimX < 0 && aimY < 0) {
             aimX *= -1; aimY *= -1;
             aimX--; aimY--;
-            board[aimY][aimX].is_flag = 1;
-            flaged++;
+            
+            if(board[aimY][aimX].is_flag)
+                board[aimY][aimX].is_flag = 0;
+            if(board[aimY][aimX].is_open == 0) {
+                board[aimY][aimX].is_flag = 1;
+                flaged++;
+            }
+            else printf("이미 열린 칸에 깃발을 설치할 수 없습니다.\n");
             continue;
         }
         
@@ -89,11 +96,13 @@ int main() {
     }
 
     if(game_over) {
-        printf("지뢰 칸을 열었습니다! 게임 종료.\n");
+        printf("\n(%d,%d)은 지뢰였습니다. 게임 오버!\n", aimX + 1, aimY + 1);
+        printf("소요 시간 : %d초", time(NULL) - start_time);
         return 0;
     }
-    if(game_win) {
-        printf("지뢰를 모두 찾았습니다. 게임 승리!\n");
+    if(n * m == c + revealed) {
+        printf("\n지뢰를 모두 찾았습니다. 게임 승리!\n");
+        printf("소요 시간 : %d초", time(NULL) - start_time);
         return 0;
     }
 }
@@ -132,23 +141,46 @@ void init() {
 }
 
 void print_board(int x, int y) {
-    printf("\n지뢰 수 : %d, 전체 칸 : %d, 남은 지뢰 : %d\n", c, n * m, c - flaged);
+    printf("\n----------------------------------------------");
+    printf("\n지뢰 수 : %d, 전체 칸 : %d, 남은 지뢰 : %d\n  ", c, n * m, c - flaged);
+    for(int i = 0; i < n; i++)
+        printf(" %2d", i + 1);
+    printf("\n");
+
     for(int i = 0; i < m; i++) {
+        printf("%2d)", i + 1);
+
         for(int j = 0; j < n; j++) {
+        background_color(base_color);
             if(board[i][j].is_flag == 1) {
+                font_color(flag_color);
                 printf(" %c ", flag);
             }
             else if(board[i][j].is_open == 1) {
-                if(board[i][j].adj)
-                    printf(" %d ", board[i][j].adj);
+                if(board[i][j].adj) {
+                    switch(board[i][j].adj) {
+                        case 1 : font_color(color_1); break;
+                        case 2 : font_color(color_2); break;
+                        case 3 : font_color(color_3); break;
+                        case 4 : font_color(color_4); break;
+                        case 5 : font_color(color_5); break;
+                    }
+
+                printf(" %d ", board[i][j].adj);
+                }
                 else printf(" %c ", opened);
                 }
                 else {
                     printf(" %c ", closed);
                 }
+        font_color(0, 0, 0);
         }
-        printf("\n");
+        background_color(0, 0, 0);
+        printf("(%d\n", i + 1);
     }
+    printf("  ");
+    for(int i = 0; i < n; i++)
+        printf(" %2d", i + 1);
 }
 
 void set_mine(int x, int y) {
