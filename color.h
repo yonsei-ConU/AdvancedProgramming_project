@@ -1,5 +1,6 @@
 
-#define base_color 50,50,50
+#define base_color 80,80,80
+#define opened_color 40,40,40
 #define flag_color 255,255,255
 #define color_1 200,0,0
 #define color_2 0,0,200

@@ -11,6 +11,8 @@
 int n, m, c = 0;        // n은 가로, m은 세로, c는 지뢰 개수
 int revealed, flaged = 0;
 int game_over = 0;
+int dx[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
+int dy[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
 
 typedef struct{ 
     int is_mine;        // 기본값 0, 지뢰일 경우 1
@@ -151,7 +153,7 @@ void init() {
 
 void print_board(int x, int y) {
     printf("\n----------------------------------------------");
-    printf("\n지뢰 수 : %d, 전체 칸 : %d, 남은 지뢰 : %d %d\n  ", c, n * m, c - flaged, revealed);
+    printf("\n지뢰 수 : %d, 전체 칸 : %d, 남은 지뢰 : %d\n  ", c, n * m, c - flaged);
     for(int i = 0; i < n; i++)
         printf(" %2d", i + 1);
     printf("\n");
@@ -160,7 +162,7 @@ void print_board(int x, int y) {
         printf("%2d)", i + 1);
 
         for(int j = 0; j < n; j++) {
-        background_color(base_color);
+        background_color(opened_color);
             if(board[i][j].is_flag == 1) {
                 font_color(flag_color);
                 printf(" %c ", flag);
@@ -180,6 +182,7 @@ void print_board(int x, int y) {
                 else printf(" %c ", opened);
                 }
                 else {
+                    background_color(base_color);
                     printf(" %c ", closed);
                 }
         font_color(0, 0, 0);
@@ -195,8 +198,6 @@ void print_board(int x, int y) {
 void set_mine(int x, int y) {
     int tempX, tempY;
     int count;
-    int dx[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
-    int dy[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
 
     for(count = 0; count < c; count++) {
         srand(clock() + count);                      // time(NULL) 의 경우 1초 단위로 업데이트되어 반복문에서 사용 부적합
@@ -225,10 +226,32 @@ void set_mine(int x, int y) {
 }
 
 void reveal(int x, int y) {
-    int dx[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
-    int dy[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
+    int count = 0;
+    int near_blank = 0;
 
-    if(board[y][x].is_open) return;
+    if(board[y][x].is_flag) return;
+
+    if(board[y][x].is_open) {
+        if(board[y][x].adj) {
+           for(int i = 0; i < 8; i++) {
+                if((0 <= (x + dx[i]) && (x + dx[i]) < n) && (0 <= (y + dy[i]) && (y + dy[i]) < m)) {
+                    if(board[y + dy[i]][x + dx[i]].is_flag)
+                        count++;
+                    if(board[y + dy[i]][x + dx[i]].is_open == 0)
+                        near_blank = 1;
+                }
+            }
+            if((board[y][x].adj == count) && board[y][x].adj && near_blank) {
+                for(int i = 0; i < 8; i++) {
+                    if((0 <= (x + dx[i]) && (x + dx[i]) < n) && (0 <= (y + dy[i]) && (y + dy[i]) < m)) {
+                        if(board[y + dy[i]][x + dx[i]].is_flag == 0 && board[y + dy[i]][x + dx[i]].is_open == 0)
+                            reveal(x + dx[i], y + dy[i]);
+                    }
+                }
+            }
+        }
+        return;
+    }
 
     board[y][x].is_open = 1;
     revealed++;
@@ -239,10 +262,12 @@ void reveal(int x, int y) {
     }                               // 재귀에서 지뢰 칸은 그 전에 해당 구문(if~adj)에서 return당하여 실행되지 않음
     if(board[y][x].adj) return;     // 지뢰 칸에 도달하기 전에 adj가 양수인 칸을 반드시 지나야 하기 때문
 
-    for(int k = 0; k < 8; k++) {
-        if(0 <= (x + dx[k]) && (x + dx[k]) < n) {
-            if(0 <= (y + dy[k]) && (y + dy[k]) < m)
-                reveal(x + dx[k], y + dy[k]);
+    for(int i = 0; i < 8; i++) {
+        if(0 <= (x + dx[i]) && (x + dx[i]) < n) {
+            if(0 <= (y + dy[i]) && (y + dy[i]) < m) {
+                if(board[y + dy[i]][x + dx[i]].is_open == 0 && board[y + dy[i]][x + dx[i]].is_flag == 0)    
+                    reveal(x + dx[i], y + dy[i]);
+            }
         }
     }
 }
