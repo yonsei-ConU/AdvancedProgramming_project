@@ -162,8 +162,9 @@ void print_board(int x, int y) {
         printf("%2d)", i + 1);
 
         for(int j = 0; j < n; j++) {
-        background_color(opened_color);
+        background_color(background_opened_color);
             if(board[i][j].is_flag == 1) {
+                background_color(background_flag_color);
                 font_color(flag_color);
                 printf(" %c ", flag);
             }
@@ -182,7 +183,7 @@ void print_board(int x, int y) {
                 else printf(" %c ", opened);
                 }
                 else {
-                    background_color(base_color);
+                    background_color(background_base_color);
                     printf(" %c ", closed);
                 }
         font_color(0, 0, 0);

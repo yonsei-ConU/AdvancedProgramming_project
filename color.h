@@ -1,6 +1,8 @@
 
-#define base_color 80,80,80
-#define opened_color 40,40,40
+#define background_base_color 80,80,80
+#define background_opened_color 40,40,40
+#define background_flag_color 20,20,20
+#define background_aim_color 120,40,40
 #define flag_color 255,255,255
 #define color_1 200,0,0
 #define color_2 0,0,200
