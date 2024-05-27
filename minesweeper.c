@@ -50,7 +50,7 @@ void reveal(int x, int y);          // 배열 관점에서의 좌표 (0부터 �
 int main() {
     int aimX, aimY;                 // 사용자 관점에서의 좌표(1부터 시작)으로 입력은 받으나 1씩 감소시켜 0 시작(배열 관점)으로 변형
     int flag_input = 0;             //
-    time_t start_time = time(NULL);      // 소요 시간 측정용도로 시작 시간 저장
+    time_t start_time = time(NULL); // 소요 시간 측정용도로 시작 시간 저장
 
     init();
     print_board(-1, -1);
@@ -64,8 +64,9 @@ int main() {
 
     set_mine(aimX, aimY);
     reveal(aimX, aimY);
+    revealed++;
 
-    while(game_over == 0) {
+    while(1) {
         print_board(aimX, aimY);
         printf("\n(%d,%d)를 입력하였습니다. 깃발을 꽂기 위해서는 좌표 앞에 -를 붙여 주세요. ex) -4 -10\n", aimX + 1, aimY + 1);
         printf("입력은 공백으로 구분됩니다 : ");
@@ -81,29 +82,32 @@ int main() {
             aimX *= -1; aimY *= -1;
             aimX--; aimY--;
             
-            if(board[aimY][aimX].is_flag)
+            if(board[aimY][aimX].is_flag) {
                 board[aimY][aimX].is_flag = 0;
-            if(board[aimY][aimX].is_open == 0) {
+                flaged--;
+            }
+            else if(board[aimY][aimX].is_open == 0) {
                 board[aimY][aimX].is_flag = 1;
                 flaged++;
-            }
-            else printf("이미 열린 칸에 깃발을 설치할 수 없습니다.\n");
+                }
+                else printf("이미 열린 칸에 깃발을 설치할 수 없습니다.\n");
             continue;
         }
         
         aimX--; aimY--;
+        revealed++;
         reveal(aimX, aimY);
-    }
 
-    if(game_over) {
-        printf("\n(%d,%d)은 지뢰였습니다. 게임 오버!\n", aimX + 1, aimY + 1);
-        printf("소요 시간 : %d초", time(NULL) - start_time);
-        return 0;
-    }
-    if(n * m == c + revealed) {
-        printf("\n지뢰를 모두 찾았습니다. 게임 승리!\n");
-        printf("소요 시간 : %d초", time(NULL) - start_time);
-        return 0;
+        if(game_over) {
+            printf("\n(%d,%d)은 지뢰였습니다. 게임 오버!\n", aimX + 1, aimY + 1);
+            printf("소요 시간 : %d초", (int)(time(NULL) - start_time));
+           return 0;
+        }
+        if(n * m == c + revealed) {
+            printf("\n지뢰를 모두 찾았습니다. 게임 승리!\n");
+            printf("소요 시간 : %d초", (int)(time(NULL) - start_time));
+            return 0;
+        }
     }
 }
 
@@ -142,7 +146,7 @@ void init() {
 
 void print_board(int x, int y) {
     printf("\n----------------------------------------------");
-    printf("\n지뢰 수 : %d, 전체 칸 : %d, 남은 지뢰 : %d\n  ", c, n * m, c - flaged);
+    printf("\n지뢰 수 : %d, 전체 칸 : %d, 남은 지뢰 : %d %d\n  ", c, n * m, c - flaged, revealed);
     for(int i = 0; i < n; i++)
         printf(" %2d", i + 1);
     printf("\n");

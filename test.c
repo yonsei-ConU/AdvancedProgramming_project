@@ -18,8 +18,11 @@ int main() {
     printf("%sm%smhello %sm%smhello\n", "\033[38;2;0;255;0", "\033[48;2;0;0;0", "\033[38;2;0;255;0", "\033[48;2;70;70;70");
     printf("%sm%smhello %sm%smhello\n", "\033[38;2;255;255;255", "\033[48;2;0;0;0", "\033[38;2;255;255;255", "\033[48;2;70;70;70");
     printf("hello\n");
-    printf("%s", color(0, 0));
-    return 0;
+    printf("%s\n\n\n", color(0, 0));
+    
+    while(1) {
+        printf("%c", _getch());
+    }
 }
 
 // https://velog.io/@chez_bono/C-%EC%BD%98%EC%86%94%EC%97%90-%EC%B6%9C%EB%A0%A5%EB%90%98%EB%8A%94-%ED%85%8D%EC%8A%A4%ED%8A%B8-%EC%83%89%EC%83%81-%EB%B3%80%EA%B2%BD
