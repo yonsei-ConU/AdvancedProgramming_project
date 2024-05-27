@@ -64,22 +64,28 @@ int main() {
 
     set_mine(aimX, aimY);
     reveal(aimX, aimY);
-    revealed++;
 
     while(1) {
+        if(n * m == c + revealed) {     // 4*4 등의 작은 판에서 시작하자마자 승리하는 경우 검사
+            printf("\n지뢰를 모두 찾았습니다. 게임 승리!\n");
+            printf("소요 시간 : %d초", (int)(time(NULL) - start_time));
+            return 0;
+        }
+
         print_board(aimX, aimY);
-        printf("\n(%d,%d)를 입력하였습니다. 깃발을 꽂기 위해서는 좌표 앞에 -를 붙여 주세요. ex) -4 -10\n", aimX + 1, aimY + 1);
+        printf("\n(%d,%d)를 입력하였습니다. 깃발을 꽂기 위해서는 좌표 앞에 -를 붙여 주세요.\n", aimX + 1, aimY + 1);
+        printf("-를 한 번만 붙여도 깃발로 간주됩니다.\n");
         printf("입력은 공백으로 구분됩니다 : ");
         scanf("%d %d", &aimX, &aimY);
 
-        while(aimX * aimY <= 0) {
-            printf("잘못된 입력입니다. 깃발을 꽂을 경우 둘 다 -를 앞에 붙여야 합니다.\n");
+        while(!(1 <= abs(aimX) && abs(aimX) <= n) && !(1 <= abs(aimY) && abs(aimY) <= m)) {
+            printf("잘못된 입력입니다. 범위에 맞춰 다시 입력해 주세요.\n");
             printf("다시 입력해 주세요 : ");
             scanf("%d %d", &aimX, &aimY);
         }
 
-        if(aimX < 0 && aimY < 0) {
-            aimX *= -1; aimY *= -1;
+        if(aimX < 0 || aimY < 0) {
+            aimX = abs(aimX); aimY = abs(aimY);
             aimX--; aimY--;
             
             if(board[aimY][aimX].is_flag) {
@@ -95,7 +101,6 @@ int main() {
         }
         
         aimX--; aimY--;
-        revealed++;
         reveal(aimX, aimY);
 
         if(game_over) {
@@ -223,8 +228,12 @@ void reveal(int x, int y) {
     int dx[8] = {-1, -1, -1, 0, 0, 1, 1, 1};
     int dy[8] = {-1, 0, 1, -1, 1, -1, 0, 1};
 
+    if(board[y][x].is_open) return;
+
     board[y][x].is_open = 1;
-    if(board[y][x].is_mine == 1){   // 사용자가 직접 지뢰 칸을 열었을 때만 실행됨.
+    revealed++;
+
+    if(board[y][x].is_mine == 1) {   // 사용자가 직접 지뢰 칸을 열었을 때만 실행됨.
         game_over = 1;
         return;
     }                               // 재귀에서 지뢰 칸은 그 전에 해당 구문(if~adj)에서 return당하여 실행되지 않음
@@ -232,13 +241,8 @@ void reveal(int x, int y) {
 
     for(int k = 0; k < 8; k++) {
         if(0 <= (x + dx[k]) && (x + dx[k]) < n) {
-            if(0 <= (y + dy[k]) && (y + dy[k]) < m) {
-                if(board[y + dy[k]][x + dx[k]].is_open == 0) {
-                    board[y + dy[k]][x + dx[k]].is_open = 1;
-                    revealed++;
-                    reveal(x + dx[k], y + dy[k]);
-                }
-            }
+            if(0 <= (y + dy[k]) && (y + dy[k]) < m)
+                reveal(x + dx[k], y + dy[k]);
         }
     }
 }
