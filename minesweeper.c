@@ -62,7 +62,7 @@ int main() {
     scanf("%d %d", &aimX, &aimY);
 
     if(c > (n * m - 9) / 5 * 4)     // 지뢰가 전체 칸의 80% 이상이면 오래 (몇 초 이상) 걸리므로 메시지 표시
-        printf("*지뢰의 개수가 많아 시간이 오래 걸릴 수 있습니다. 기다려 주세요\n");
+        printf("\n*지뢰의 개수가 많아 시간이 오래 걸릴 수 있습니다. 기다려 주세요\n");
     
     aimX--; aimY--;                 // 배열 관점의 좌표료 변경
 
@@ -81,12 +81,10 @@ int main() {
 
         print_board(aimX, aimY);
         
-        printf("\n(%d,%d)를 입력하였습니다. 깃발을 꽂기 위해서는 좌표 앞에 -를 붙여 주세요.\n", aimX + 1, aimY + 1);
-        printf("-를 한 번만 붙여도 깃발로 간주됩니다.\n");
-        printf("입력은 공백으로 구분됩니다 : ");
+        printf("\n(%d,%d)를 입력하였습니다. 좌표를 입력해 주세요 : ", aimX + 1, aimY + 1);
         scanf("%d %d", &aimX, &aimY);
 
-        while(!(1 <= abs(aimX) && abs(aimX) <= n) && !(1 <= abs(aimY) && abs(aimY) <= m)) {
+        while(!(1 <= abs(aimX) && abs(aimX) <= n) || !(1 <= abs(aimY) && abs(aimY) <= m)) {
             printf("잘못된 입력입니다. 범위에 맞춰 다시 입력해 주세요.\n");
             printf("다시 입력해 주세요 : ");
             scanf("%d %d", &aimX, &aimY);
@@ -128,6 +126,15 @@ int main() {
 }
 
 void init() {
+    printf("##지뢰 찾기##\n\n");
+    printf("지뢰 찾기는 직사각형의 판 안에서 모든 지뢰를 찾아내면 승리하는 간단한 게임입니다.\n\n");
+    printf("기본적인 조작은 좌표 입력으로 진행되며 왼쪽 위에서 1부터 시작합니다.\n");
+    printf("좌표는 공백으로 구분됩니다. 칸에 적힌 숫자는 인접한 칸에 있는 지뢰의 수를 의미합니다.\n");
+    printf("좌표 앞에 -를 한 번 이상 붙일 경우 (ex. -4 7 또는 -9 -2) 깃발을 설치하는 것으로 간주됩니다.\n");
+    printf("깃발이 설치된 자리에 깃발을 다시 설치하면 깃발이 없어집니다.\n\n");
+    printf("직전에 선택한 칸은 빨간색 배경으로 표시됩니다.\n\n");
+    printf(sample_1);
+
     while(1) {
         printf("가로 크기를 입력해 주세요 (5~20) : ");
         scanf("%d", &n);
@@ -161,7 +168,7 @@ void init() {
 }
 
 void print_board(int x, int y) {
-    printf("\n----------------------------------------------");
+    printf("-----------------------------------------------");
     printf("\n지뢰 수 : %d, 전체 칸 : %d, 남은 지뢰 : %d\n  ", c, n * m, c - flaged);
     for(int i = 0; i < n; i++)
         printf(" %2d", i + 1);      // 맨 위 숫자를 출력하는 역할
@@ -182,6 +189,7 @@ void print_board(int x, int y) {
                     background_color(background_incorrect_color);   // 패배 후 지뢰가 없는 자리에 깃발을 설치했을 떄
                 else background_color(background_flag_color);       // 게임 중 깃발 자리
                 font_color(flag_color);
+                if(x == j && y == i) background_color(background_aim_color);
                 printf(" %c ", flag);
             }
             else if(board[i][j].is_open == 1) {     // 게임 중 열려 있는 자리
@@ -195,15 +203,18 @@ void print_board(int x, int y) {
                         case 6 : font_color(color_6); break;
                     }
                 background_color(background_opened_color);
+                if(x == j && y == i) background_color(background_aim_color);
                 printf(" %d ", board[i][j].adj);
                 }
                 else {      // 게임 중 열려 있는 빈 자리
                     background_color(background_opened_color);
+                    if(x == j && y == i) background_color(background_aim_color);
                     printf(" %c ", opened);
                 }
             }
             else {          // 열리지 않은 자리
                 background_color(background_closed_color);
+                if(x == j && y == i) background_color(background_aim_color);
                 printf(" %c ", closed);
             }
         }
