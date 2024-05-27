@@ -75,6 +75,7 @@ int main() {
         }
 
         print_board(aimX, aimY);
+        
         printf("\n(%d,%d)를 입력하였습니다. 깃발을 꽂기 위해서는 좌표 앞에 -를 붙여 주세요.\n", aimX + 1, aimY + 1);
         printf("-를 한 번만 붙여도 깃발로 간주됩니다.\n");
         printf("입력은 공백으로 구분됩니다 : ");
@@ -101,6 +102,7 @@ int main() {
                 else printf("이미 열린 칸에 깃발을 설치할 수 없습니다.\n");
             continue;
         }
+        
         
         aimX--; aimY--;
         reveal(aimX, aimY);
