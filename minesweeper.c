@@ -3,9 +3,11 @@
 #include <time.h>
 #include "color.h"
 
+// 컴파일 시 color.h 파일을 같은 폴더에 놓고 진행할 것
+
 #define mine '#'
 #define closed '@'
-#define opened '_'
+#define opened ' '
 #define flag '!'
 
 #define bool int
@@ -33,12 +35,10 @@ Board board[20][20];    //board[y좌표][x좌표]
  */
 void init();
 /**
- * @brief board를 출력하는 함수. 하이라이트 좌표로 음수 입력시 하이라이트 없음
- * @param x 하이라이트 표시할 위치의 x좌표 (0부터 시작)
- * @param y 하이라이트 표시할 위치의 y좌표 (0부터 시작)
+ * @brief board를 출력하는 함수.
  * @return 없음
  */
-void print_board(int x, int y);     // 배열 관점에서의 좌표 (0부터 시작)
+void print_board();     // 배열 관점에서의 좌표 (0부터 시작)
 /**
  * @brief 지뢰의 위치를 정하고 각 자리의 adj(주변 지뢰의 개수)를 계산하는 함수.
  * @param x 시작지점의 x좌표 (0부터 시작)
@@ -58,7 +58,7 @@ int main() {
     int aimX, aimY;                 // 사용자 관점에서의 좌표(1부터 시작)으로 입력은 받으나 1씩 감소시켜 0 시작(배열 관점)으로 변형
 
     init();
-    print_board(-1, -1);
+    print_board();
 
     printf("\nx, y 좌표를 공백으로 구분하여 입력해 주세요.\n");
     printf("처음 여는 칸과 그 주변은 지뢰가 아닙니다.\n");
@@ -82,7 +82,7 @@ int main() {
     time_t start_time = time(NULL); // 소요 시간 측정용도로 시작 시간 저장
 
     while(1) {
-        print_board(aimX, aimY);
+        print_board();
         
         printf("\n(%d,%d)를 입력하였습니다. 새 좌표를 입력해 주세요 : ", aimX + 1, aimY + 1);
         scanf("%d %d", &aimX, &aimY);
@@ -114,13 +114,13 @@ int main() {
         reveal(aimX, aimY);
 
         if(game_over) {
-            print_board(-1, -1);
+            print_board();
             printf("\n(%d,%d)은 지뢰였습니다. 게임 오버!\n", aimX + 1, aimY + 1);
             printf("소요 시간 : %d초", (int)(time(NULL) - start_time));
            return 0;
         }
         if(n * m == c + revealed) {
-            print_board(-1, -1);
+            print_board();
             printf("\n%d개의 지뢰를 모두 찾았습니다. 게임 승리!\n", c);
             printf("소요 시간 : %d초", (int)(time(NULL) - start_time));
             return 0;
@@ -131,11 +131,10 @@ int main() {
 void init() {
     printf("##지뢰 찾기##\n\n");
     printf("지뢰 찾기는 직사각형의 판 안에서 모든 지뢰를 찾아내면 승리하는 간단한 게임입니다.\n");
-    printf("기본적인 조작은 좌표 입력으로 진행되며 왼쪽 위에서 1부터 시작합니다.\n\n");
+    printf("기본적인 조작은 좌표 입력으로 진행되며 '왼쪽 위'에서 1부터 시작합니다.\n\n");
     printf("좌표는 공백으로 구분됩니다. 칸에 적힌 숫자는 인접한 칸에 있는 지뢰의 수를 의미합니다.\n");
     printf("좌표 앞에 -를 한 번 이상 붙일 경우 (ex. -4 7 또는 -9 -2) 깃발을 설치하는 것으로 간주됩니다.\n");
-    printf("깃발이 설치된 자리에 깃발을 다시 설치하면 깃발이 없어집니다.\n");
-    printf("직전에 선택한 칸은 빨간색 배경으로 표시됩니다.\n\n");
+    printf("깃발이 설치된 자리에 깃발을 다시 설치하면 깃발이 없어집니다.\n\n");
     printf(sample_1);
     printf("게임을 시작합니다.\n");
 
@@ -171,7 +170,7 @@ void init() {
     }
 }
 
-void print_board(int x, int y) {
+void print_board() {
     printf("-----------------------------------------------");
     printf("\n지뢰 수 : %d, 전체 칸 : %d, 남은 지뢰 : %d\n  ", c, n * m, c - flaged);
     for(int i = 0; i < n; i++)
@@ -193,7 +192,6 @@ void print_board(int x, int y) {
                     background_color(background_incorrect_color);   // 패배 후 지뢰가 없는 자리에 깃발을 설치했을 떄
                 else background_color(background_flag_color);       // 게임 중 깃발 자리
                 font_color(flag_color);
-                if(x == j && y == i) background_color(background_aim_color);
                 printf(" %c ", flag);
             }
             else if(board[i][j].is_open == true) {     // 게임 중 열려 있는 자리
@@ -207,18 +205,15 @@ void print_board(int x, int y) {
                         case 6 : font_color(color_6); break;
                     }
                 background_color(background_opened_color);
-                if(x == j && y == i) background_color(background_aim_color);
                 printf(" %d ", board[i][j].adj);
                 }
                 else {      // 게임 중 열려 있는 빈 자리
                     background_color(background_opened_color);
-                    if(x == j && y == i) background_color(background_aim_color);
                     printf(" %c ", opened);
                 }
             }
             else {          // 열리지 않은 자리
                 background_color(background_closed_color);
-                if(x == j && y == i) background_color(background_aim_color);
                 printf(" %c ", closed);
             }
         }
@@ -252,8 +247,10 @@ void set_mine(int x, int y) {
         for(int j = 0; j < m; j++) {
             count = 0;
             for(int k = 0; k < 8; k++) {
-                if((0 <= (i + dx[k]) && (i + dx[k]) < n) && (0 <= (j + dy[k]) && (j + dy[k]) < n)) {
-                    if(board[j + dy[k]][i + dx[k]].is_mine == true)
+                int nx = i + dx[k];
+                int ny = j + dy[k];
+                if((0 <= nx && nx < n) && (0 <= ny && ny < n)) {
+                    if(board[ny][nx].is_mine == true)
                         count++;
                 }
             }
@@ -271,18 +268,22 @@ void reveal(int x, int y) {
     if(board[y][x].is_open) {           // 열려 있고, adj가 있다는 것은
         if(board[y][x].adj) {           // 주변 칸을 바로 열 목적으로 숫자 칸을 입력했다는 것
            for(int i = 0; i < 8; i++) {
-                if((0 <= (x + dx[i]) && (x + dx[i]) < n) && (0 <= (y + dy[i]) && (y + dy[i]) < m)) {
-                    if(board[y + dy[i]][x + dx[i]].is_flag)
+                int nx = x + dx[i];
+                int ny = y + dy[i];
+                if((0 <= nx && nx < n) && (0 <= ny && ny < m)) {
+                    if(board[ny][nx].is_flag)
                         count++;
-                    if(board[y + dy[i]][x + dx[i]].is_open == false)
+                    if(board[ny][nx].is_open == false)
                         near_blank = true;
                 }
             }                           // 주변에 깃발이 알맞은 수로 꽂아져 있고 안 열린 칸이 있으면
             if((board[y][x].adj == count) && board[y][x].adj && near_blank) {
                 for(int i = 0; i < 8; i++) {
-                    if((0 <= (x + dx[i]) && (x + dx[i]) < n) && (0 <= (y + dy[i]) && (y + dy[i]) < m)) {
-                        if(board[y + dy[i]][x + dx[i]].is_flag == false && board[y + dy[i]][x + dx[i]].is_open == false)
-                            reveal(x + dx[i], y + dy[i]);   // 해당 칸을 모두 열기
+                    int nx = x + dx[i];
+                    int ny = y + dy[i];
+                    if((0 <= nx && nx < n) && (0 <= ny && ny < m)) {
+                        if(board[ny][nx].is_flag == false && board[ny][nx].is_open == false)
+                            reveal(nx, ny);   // 해당 칸을 모두 열기
                     }
                 }
             }
@@ -300,9 +301,11 @@ void reveal(int x, int y) {
     if(board[y][x].adj) return;     // 지뢰 칸에 도달하기 전에 adj가 양수인 칸을 반드시 지나야 하기 때문
 
     for(int i = 0; i < 8; i++) {
-        if((0 <= (x + dx[i]) && (x + dx[i]) < n) && (0 <= (y + dy[i]) && (y + dy[i]) < m)) {
-            if(board[y + dy[i]][x + dx[i]].is_open == false && board[y + dy[i]][x + dx[i]].is_flag == false)    
-                reveal(x + dx[i], y + dy[i]);
+        int nx = x + dx[i];
+        int ny = y + dy[i];
+        if((0 <= nx && nx < n) && (0 <= ny && ny < m)) {
+            if(board[ny][nx].is_open == false && board[ny][nx].is_flag == false)    
+                reveal(nx, ny);
         }
     }
 }
