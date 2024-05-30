@@ -227,9 +227,12 @@ void print_board() {
 void set_mine(int x, int y) {
     int tempX, tempY;
     int count;
+    int t = 0;
 
     for(count = 0; count < c; count++) {
-        srand(clock() + count);                      // time(NULL) 의 경우 1초 단위로 업데이트되어 반복문에서 사용 부적합
+        t++;
+        //srand(clock() + count);                      // time(NULL) 의 경우 1초 단위로 업데이트되어 반복문에서 사용 부적합
+        srand(time(NULL) * (x + y) + count + t);
         tempX = (rand() * rand() + count * x) % n;   // 최대한의 무작위성을 가질 수 있도록 변하는 값들을 활용
         tempY = (rand() * rand() + count * y) % m;
 
