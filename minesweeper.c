@@ -74,7 +74,7 @@ int main() {
     reveal(aimX, aimY);
 
     if(n * m == c + revealed) {     // 4*4 등의 작은 판에서 시작하자마자 승리하는 경우 검사
-            print_board(-1, -1);
+            print_board();
             printf("\n시작하자마자 게임이 끝났네요!\n%d개의 지뢰를 모두 찾았습니다? 게임 승리.\n", c);
             return 0;
     }
