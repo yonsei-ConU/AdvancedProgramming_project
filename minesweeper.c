@@ -38,7 +38,7 @@ void init();
  * @brief board를 출력하는 함수.
  * @return 없음
  */
-void print_board();     // 배열 관점에서의 좌표 (0부터 시작)
+void print_board();                 // 배열 관점에서의 좌표 (0부터 시작)
 /**
  * @brief 지뢰의 위치를 정하고 각 자리의 adj(주변 지뢰의 개수)를 계산하는 함수.
  * @param x 시작지점의 x좌표 (0부터 시작)
@@ -53,6 +53,13 @@ void set_mine(int x, int y);        // 배열 관점에서의 좌표 (0부터 �
  * @return 없음
  */
 void reveal(int x, int y);          // 배열 관점에서의 좌표 (0부터 시작)
+/**
+ * @brief 지뢰의 칸을 여는 함수 (깃발 칸 전용)
+ * @param x 열고자 하는 지점의 x좌표 (0부터 시작)
+ * @param y 열고자 하는 지점의 y좌표 (0부터 시작)
+ * @return 없음
+ */
+void reveal_surrounding_if_flags_match(int x, int y);
 
 int main() {
     int aimX, aimY;                 // 사용자 관점에서의 좌표(1부터 시작)으로 입력은 받으나 1씩 감소시켜 0 시작(배열 관점)으로 변형
@@ -64,9 +71,6 @@ int main() {
     printf("참고 : 처음 여는 칸과 그 주변은 지뢰가 아닙니다\n");
     printf("범위 x(1~%d) y(1~%d) : ", n, m);
     scanf("%d %d", &aimX, &aimY);
-
-    if(c > (n * m - 9) / 5 * 4)     // 지뢰가 전체 칸의 80% 이상이면 오래 (몇 초 이상) 걸리므로 메시지 표시
-        printf("\n참고 : 지뢰의 개수가 많아 시간이 오래 걸릴 수 있습니다. 기다려 주세요\n");
     
     aimX--; aimY--;                 // 배열 관점의 좌표료 변경
 
@@ -233,8 +237,8 @@ void set_mine(int x, int y) {
         t++;
         //srand(clock() + count);                      // time(NULL) 의 경우 1초 단위로 업데이트되어 반복문에서 사용 부적합
         srand(time(NULL) * (x + y) + count + t);
-        tempX = (rand() * rand() + count * x) % n;   // 최대한의 무작위성을 가질 수 있도록 변하는 값들을 활용
-        tempY = (rand() * rand() + count * y) % m;
+        tempX = (rand() + count * x) % n;   // 최대한의 무작위성을 가질 수 있도록 변하는 값들을 활용
+        tempY = (rand() + count * y) % m;
 
         if((abs(tempX - x) > 1 || abs(tempY - y) > 1) && board[tempY][tempX].is_mine == false)
             board[tempY][tempX].is_mine = true;         // 첫 칸 주위 1칸에는 지뢰를 배치하지 않도록 하여 초반 억까 방지
@@ -276,14 +280,7 @@ void reveal(int x, int y) {
                 }
             }                           // 주변에 깃발이 알맞은 수로 꽂아져 있고 안 열린 칸이 있으면
             if((board[y][x].adj == count) && board[y][x].adj && near_blank) {
-                for(int i = 0; i < 8; i++) {
-                    int nx = x + dx[i];
-                    int ny = y + dy[i];
-                    if((0 <= nx && nx < n) && (0 <= ny && ny < m)) {
-                        if(board[ny][nx].is_flag == false && board[ny][nx].is_open == false)
-                            reveal(nx, ny);   // 해당 칸을 모두 열기
-                    }
-                }
+                reveal_surrounding_if_flags_match(x, y);
             }
         }
         return;                         // 열려 있는 경우 또 열 필요는 없으므로 종료
@@ -304,6 +301,30 @@ void reveal(int x, int y) {
         if((0 <= nx && nx < n) && (0 <= ny && ny < m)) {
             if(board[ny][nx].is_open == false && board[ny][nx].is_flag == false)    
                 reveal(nx, ny);
+        }
+    }
+}
+
+void reveal_surrounding_if_flags_match(int x, int y) {
+    int flag_count = 0;
+
+    // 주변 칸의 깃발 개수를 셈
+    for (int i = 0; i < 8; i++) {
+        int nx = x + dx[i];
+        int ny = y + dy[i];
+        if ((0 <= nx && nx < n) && (0 <= ny && ny < m) && board[ny][nx].is_flag) {
+            flag_count++;
+        }
+    }
+
+    // 깃발 개수가 인접 지뢰 개수와 같다면 주변 칸을 연다
+    if (flag_count == board[y][x].adj) {
+        for (int i = 0; i < 8; i++) {
+            int nx = x + dx[i];
+            int ny = y + dy[i];
+            if ((0 <= nx && nx < n) && (0 <= ny && ny < m) && !board[ny][nx].is_open && !board[ny][nx].is_flag) {
+                reveal(nx, ny);
+            }
         }
     }
 }
