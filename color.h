@@ -42,7 +42,7 @@ void font_color(int r, int g, int b) {
 * @return 없음
 */
 void background_color(int r, int g, int b) {
-		if(!r && !g && !b) {
+	if(!r && !g && !b) {
 		printf("\033[0m");
 		return;
 	}
